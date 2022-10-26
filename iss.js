@@ -24,6 +24,17 @@ const fetchMyIP = function(callback) {
   });
 };
 
+/**
+ * Makes a single API request to retrieve the lat/lng for a given IPv4 address.
+ * Input:
+ *   - The ip (ipv4) address (string)
+ *   - A callback (to pass back an error or the lat/lng object)
+ * Returns (via Callback):
+ *   - An error, if any (nullable)
+ *   - The lat and lng as an object (null if error). Example:
+ *     { latitude: '49.27670', longitude: '-123.13000' }
+ */
+
 const fetchCoordsByIP = function(ip, callback) {
   request(`http://ipwho.is/${ip}`, (error, response, body) => {
     
@@ -74,4 +85,44 @@ const fetchISSFlyOverTimes = function(coords, callback) {
   });
 };
 
-module.exports = {fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes};
+/**
+* Orchestrates multiple API requests in order to determine the next 5 upcoming ISS fly overs for the user's current location.
+* Input:
+*   - A callback with an error or results.
+* Returns (via Callback):
+*   - An error, if any (nullable)
+*   - The fly-over times as an array (null if error):
+*     [ { risetime: <number>, duration: <number> }, ... ]
+*/
+
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) {
+      console.log("It didn't work! " , error);
+      return;
+    }
+
+    fetchCoordsByIP(ip, (error, coords) => {
+      if (error) {
+        console.log("There is an error! " , error);
+        return;
+      }
+
+      fetchISSFlyOverTimes(coords, (error, data) => {
+        if (error) {
+          console.log("Error found! ", error);
+          return;
+        }
+        
+        let passTimes = "";
+        for (let i of data) {
+          let dataFormat = new Date(i.risetime);
+          passTimes += `Next pass at ${dataFormat} for ${i.duration} seconds!\n`;
+        }
+        callback(null, passTimes);
+      });
+    });
+  });
+};
+
+module.exports = {nextISSTimesForMyLocation};
