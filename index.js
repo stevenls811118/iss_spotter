@@ -24,7 +24,7 @@ fetchCoordsByIP(ip, (error, data) => {
 
 const coords = {
   latitude: 51.0486151,
-  longitude: -114.0708459
+  longitude: -181.0708459
 };
 const inspect = require('util').inspect;
 
@@ -33,6 +33,5 @@ fetchISSFlyOverTimes(coords, (error, data) => {
     console.log("There is an error! ", error);
     return;
   }
-
   console.log(`It worked! Returned a list of flyover time: ${inspect(data)}`);
 });
